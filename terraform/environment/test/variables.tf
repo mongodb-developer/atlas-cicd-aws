@@ -5,7 +5,7 @@ variable "cluster_size" {
 }
 variable "cluster_mongodbversion" {
   description = "The Major MongoDB Version"
-  default = "5.0"
+  default = "4.4"
 }
 variable "cluster_disk_size_gb" {
   description = "MongoDB Disk Size"
