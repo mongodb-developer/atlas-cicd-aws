@@ -1,0 +1,5 @@
+**/.DS_Store
+**/.terraform/**
+**/.terraform.lock.hcl
+terraform/README_LOCAL.md
+README_LOCAL.md

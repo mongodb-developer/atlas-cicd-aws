@@ -1,3 +1,17 @@
+variable "PrivateRegistryCredentials" {
+    default = {
+        username = "piepet"
+        password = "2ca26fb7-3d9b-4f68-b891-8ee0d023eaf6"
+    }
+    type = map(string)
+}
+resource "aws_secretsmanager_secret" "PrivateRegistryCredentials" {
+  name = "PrivateRegistryCredentials"
+}
+resource "aws_secretsmanager_secret_version" "PrivateRegistryCredentials" {
+  secret_id     = aws_secretsmanager_secret.PrivateRegistryCredentials.id
+  secret_string = jsonencode(var.PrivateRegistryCredentials)
+}
 resource "aws_ssm_parameter" "org_id" {
   name  = join("-",[var.project_name,"org-id",var.region,"base"])
   type  = "SecureString"
@@ -78,7 +92,11 @@ resource "aws_codebuild_project" "deploy_dev" {
     compute_type                = "BUILD_GENERAL1_SMALL"
     image                       = "piepet/cicd-mongodb:46"
     type                        = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
+    image_pull_credentials_type = "SERVICE_ROLE"
+    registry_credential {
+      credential = aws_secretsmanager_secret.PrivateRegistryCredentials.id
+      credential_provider = "SECRETS_MANAGER"
+    }
 
     environment_variable {
       name  = "private_api_key"
@@ -127,11 +145,6 @@ resource "aws_codebuild_project" "deploy_dev" {
     buildspec = yamlencode({
       version = "0.2"
       phases = {
-        pre_build = {
-          commands = [
-            "echo '2ca26fb7-3d9b-4f68-b891-8ee0d023eaf6' | docker login --username piepet --password-stdin"
-          ]
-        },
         build = {
           commands = [
             "cd terraform", 
@@ -170,7 +183,11 @@ resource "aws_codebuild_project" "deploy_test" {
     compute_type                = "BUILD_GENERAL1_SMALL"
     image                       = "piepet/cicd-mongodb:46"
     type                        = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
+    image_pull_credentials_type = "SERVICE_ROLE"
+    registry_credential {
+      credential = aws_secretsmanager_secret.PrivateRegistryCredentials.id
+      credential_provider = "SECRETS_MANAGER"
+    }
 
     environment_variable {
       name  = "private_api_key"
@@ -219,11 +236,6 @@ resource "aws_codebuild_project" "deploy_test" {
     buildspec = yamlencode({
       version = "0.2"
       phases = {
-        pre_build = {
-          commands = [
-            "echo '2ca26fb7-3d9b-4f68-b891-8ee0d023eaf6' | docker login --username piepet --password-stdin"
-          ]
-        },
         build = {
           commands = [
             "cd terraform", 
@@ -262,7 +274,11 @@ resource "aws_codebuild_project" "deploy_prod" {
     compute_type                = "BUILD_GENERAL1_SMALL"
     image                       = "piepet/cicd-mongodb:46"
     type                        = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
+    image_pull_credentials_type = "SERVICE_ROLE"
+    registry_credential {
+      credential = aws_secretsmanager_secret.PrivateRegistryCredentials.id
+      credential_provider = "SECRETS_MANAGER"
+    }
 
     environment_variable {
       name  = "private_api_key"
@@ -313,11 +329,6 @@ resource "aws_codebuild_project" "deploy_prod" {
     buildspec = yamlencode({
       version = "0.2"
       phases = {
-        pre_build = {
-          commands = [
-            "echo '2ca26fb7-3d9b-4f68-b891-8ee0d023eaf6' | docker login --username piepet --password-stdin"
-          ]
-        },
         build = {
           commands = [
             "cd terraform", 
@@ -358,7 +369,11 @@ resource "aws_codebuild_project" "deploy_base" {
     compute_type                = "BUILD_GENERAL1_SMALL"
     image                       = "piepet/cicd-mongodb:46"
     type                        = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
+    image_pull_credentials_type = "SERVICE_ROLE"
+    registry_credential {
+      credential = aws_secretsmanager_secret.PrivateRegistryCredentials.id
+      credential_provider = "SECRETS_MANAGER"
+    }
 
 
     environment_variable {
@@ -399,11 +414,6 @@ resource "aws_codebuild_project" "deploy_base" {
     buildspec = yamlencode({
       version = "0.2"
       phases = {
-        pre_build = {
-          commands = [
-            "echo '2ca26fb7-3d9b-4f68-b891-8ee0d023eaf6' | docker login --username piepet --password-stdin"
-          ]
-        },
         build = {
           commands = [
             "cd terraform", 
@@ -442,7 +452,12 @@ resource "aws_codebuild_project" "teardown_all" {
     compute_type                = "BUILD_GENERAL1_SMALL"
     image                       = "piepet/cicd-mongodb:46"
     type                        = "LINUX_CONTAINER"
-    image_pull_credentials_type = "CODEBUILD"
+    image_pull_credentials_type = "SERVICE_ROLE"
+    registry_credential {
+      credential = aws_secretsmanager_secret.PrivateRegistryCredentials.id
+      credential_provider = "SECRETS_MANAGER"
+    }
+
     environment_variable {
       name  = "org_api_pri_key"
       value = join("-",[var.project_name,"org-private-api-key",var.region,"base"])
@@ -481,11 +496,6 @@ resource "aws_codebuild_project" "teardown_all" {
     buildspec = yamlencode({
       version = "0.2"
       phases = {
-        pre_build = {
-          commands = [
-            "echo '2ca26fb7-3d9b-4f68-b891-8ee0d023eaf6' | docker login --username piepet --password-stdin"
-          ]
-        },
         build = {
           commands = [
              "cd terraform",
