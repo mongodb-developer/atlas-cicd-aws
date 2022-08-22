@@ -110,7 +110,11 @@ RUN set -eux \
 
 # add aws cli location to path
 #ENV PATH=~/.local/bin:$PATH
-
+RUN apt update
+# We directly answer the questions asked using the printf statement
+RUN printf 'y\n1\n\1n' | apt install nodejs
+RUN apt install -y npm
+RUN npm install -g mongodb-realm-cli
 # Adds local templates directory and contents in /usr/local/terrafrom-templates
 #ADD templates /usr/local/bin/templates
 RUN rm terraform_0.14.9_linux_amd64.zip
